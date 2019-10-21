@@ -1,55 +1,56 @@
 const functions = require('firebase-functions');
 var admin = require("firebase-admin");
 
-// var serviceAccount = require("./env/ikea-mau-firebase-adminsdk-v92sd-d030f9b8db.json");
+var serviceAccount = require("./env/ikea-mau-eu-firebase-adminsdk-74vd1-1752f561a6.json");
 
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: "https://ikea-mau.firebaseio.com"
-// });
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://ikea-mau-eu.firebaseio.com"
+});
 
-admin.initializeApp(functions.config().firebase);
+//admin.initializeApp(functions.config().firebase);
 
 let db = admin.firestore();
 
 const express = require('express');
 const app = express();
 
+const products = db.collection('ikea_products');
+
 app.get('/getProduct/:id', async (req, res) => {
-    let catalogue = db.collection('ikea_collection').doc('catalogue');
+    let promises = [];
+    let ids = req.params.id.split(',');
 
-    let id = req.params.id;
-    console.log("Looking for product with id: " + id);
-    catalogue.listCollections().then(productFamilies => {
-        productFamilies.forEach(productFamily => {
-            let product = productFamily.doc(id);
-
-            product.get()
-                .then(doc => {
-                    if (!doc.exists) {
-                        console.log('No such document!');
-                    } else {
-                        let productData = doc.data();
-                        productData.familyName = productFamily.id;
-                        productData.id = product.id;
-                        console.log('Found product:', doc.data());
-                        res.json(productData);
-                    }
-                    return productData;
-                }).catch(err => {
-                    console.log('Error getting document', err);
-                    return err;
-                });
+    if(ids.length > 1){
+        ids.forEach((id) => {
+            promises.push(getProduct(id));
         });
-        return productFamily;
-    }).catch(error => {
-        console.log(error);
-        return error;
-    });
-
+    
+        Promise.all(promises).then((data) => {
+            res.json({products: data});
+            return data;
+        }).catch((error) => {
+            console.log(error);
+            return error;
+        });
+    }else{
+        let data = await getProduct(ids[0]);
+        res.json({product: data});
+    }
 });
 
-app.get('/hello', (req, res) => {
-    res.sendStatus(200);
+async function getProduct(id) {
+    let product = await products.doc(id).get();
+
+    if (product.exists) {
+        let productData = product.data();
+        return productData;
+    } else {
+        return { error: "Couldn't find product." }
+    }
+}
+
+app.get('/', (req, res) => {
+    res.send("These are not the droids you're looking for.");
 })
 exports.api = functions.https.onRequest(app);
