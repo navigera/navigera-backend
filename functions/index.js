@@ -1,7 +1,7 @@
 const functions = require('firebase-functions');
 var admin = require("firebase-admin");
 
-//var serviceAccount = require("./env/ikea-mau-firebase-adminsdk-v92sd-d030f9b8db.json");
+// var serviceAccount = require("./env/ikea-mau-firebase-adminsdk-v92sd-d030f9b8db.json");
 
 // admin.initializeApp({
 //     credential: admin.credential.cert(serviceAccount),
@@ -29,10 +29,13 @@ app.get('/getProduct/:id', async (req, res) => {
                     if (!doc.exists) {
                         console.log('No such document!');
                     } else {
+                        let productData = doc.data();
+                        productData.familyName = productFamily.id;
+                        productData.id = product.id;
                         console.log('Found product:', doc.data());
-                        res.json(doc.data());
+                        res.json(productData);
                     }
-                    return doc.data();
+                    return productData;
                 }).catch(err => {
                     console.log('Error getting document', err);
                     return err;
