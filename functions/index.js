@@ -1,6 +1,7 @@
 const functions = require('firebase-functions');
 var admin = require("firebase-admin");
 const algoliasearch = require('algoliasearch');
+const storesJSON = `[{"name":"Stockholm Kungens Kurva","no":"012","lat":59.271155,"long":17.916201},{"name":"Göteborg Kållered","no":"014","lat":57.60379,"long":12.048397},{"name":"Linköping","no":"017","lat":58.433189,"long":15.58755},{"name":"Stockholm Barkarby","no":"019","lat":59.420331,"long":17.857064},{"name":"Västerås","no":"020","lat":59.607596,"long":16.456017},{"name":"Uddevalla","no":"053","lat":58.355878,"long":11.818371},{"name":"Uppsala","no":"070","lat":59.847755,"long":17.692156},{"name":"Örebro","no":"106","lat":59.211089,"long":15.134397},{"name":"Jönköping","no":"109","lat":57.77267,"long":14.205751},{"name":"Gävle","no":"122","lat":60.633906,"long":16.989895},{"name":"Borlänge","no":"248","lat":60.482664,"long":15.421457},{"name":"Älmhult","no":"268","lat":56.550534,"long":14.161674},{"name":"Göteborg Bäckebol","no":"398","lat":57.771771,"long":11.999672},{"name":"Umeå","no":"416","lat":63.80771,"long":20.25501},{"name":"Malmö","no":"445","lat":55.552634,"long":12.986215},{"name":"Sundsvall","no":"467","lat":62.444195,"long":17.334119},{"name":"Helsingborg","no":"468","lat":56.092426,"long":12.760899},{"name":"Kalmar","no":"469","lat":56.68556,"long":16.321199},{"name":"Haparanda Tornio","no":"470","lat":65.842982,"long":24.13192},{"name":"Karlstad","no":"471","lat":59.378797,"long":13.41966}]`;
 
 const APP_ID = functions.config().algolia.app;
 const ADMIN_KEY = functions.config().algolia.key;
@@ -23,6 +24,11 @@ const express = require('express');
 const app = express();
 
 const products = db.collection('ikea_products');
+
+app.get('/getStores', (req, res) => {
+    let json = JSON.parse(storesJSON);
+    res.json(json);
+});
 
 app.get('/getProduct/:id', async (req, res) => {
     let promises = [];
@@ -126,7 +132,7 @@ exports.sendCollectionToAlgolia = functions.https.onRequest(async (req, res) => 
         index.saveObjects(algoliaRecords, (error, content) => {
             res.status(200).send("Products was indexed to Algolia successfully.");
         });
-        
+
         return docs;
     }).catch((error) => {
         res.send(error);

@@ -4,6 +4,10 @@ For getting details about the furniture.
 
 ## Endpoints:
 
+```/getStores```
+
+Fetches details about all stores in a locale.
+
 ```/getProduct/<PRODUCT_ID>```
 
 Fetches details about a single product, [sample JSON response here](https://pastebin.com/d0NmuxBF).
